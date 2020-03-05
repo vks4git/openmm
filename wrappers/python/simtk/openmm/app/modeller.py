@@ -781,7 +781,15 @@ class Modeller(object):
             deltaHA = a-h
             deltaDH /= norm(deltaDH)
             deltaHA /= norm(deltaHA)
-            return acos(dot(deltaDH, deltaHA)) < 50*degree
+
+            # Even though vectors 'deltaDH' and 'deltaHA' are normalised,
+            # absolute value of their dot product may exceed 1.0.
+            # For example, the following tho vectors are normalised:
+            # delta DH: Vec3(x=0.5301235428219312, y=0.7735602279872472, z=0.34723709914443535)
+            # delta HA: Vec3(x=-0.5301235428219312, y=-0.7735602279872472, z=-0.34723709914443535)
+            # but their dot product is -1.0000000000000002 due to representation of floats, which causes 'ValueError: math domain error'.
+            truncated_dot = max(-1.0, min(1.0, dot(deltaDH, deltaHA)))
+            return acos(truncated_dot) < 50*degree
 
         # Loop over residues.
 
